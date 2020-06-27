@@ -1,4 +1,5 @@
 FROM golang:alpine
+RUN go get github.com/nats-io/nats.go/
 RUN mkdir /goserver
 ADD /main/ /goserver/
 WORKDIR /goserver
