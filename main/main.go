@@ -30,27 +30,15 @@ func main() {
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		type RData struct {
-			Status  string `json:"status"`
-			Message string `json:"message"`
-		}
-
 		param1 := r.URL.Query().Get("msg")
-
 		if param1 != "" {
 			w.Header().Set("Content-Type", "application/json")
-			s := `{ "status": "OK", "message": "` + param1 + `" }`
-			data := &RData{}
-			err := json.Unmarshal([]byte(s), data)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			js, err := json.Marshal(data)
-			w.Write(js)
+			w.Header().Set("Content-Type", "application/json")
+			w.Write([]byte(`{ "status": "OK", "status_code":"1", "message": "` + param1 + `" }`))
 			return
 		}
-		w.Write([]byte("Si llegaste acá, ya sabes que hacer."))
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{status:"OK", "status_code":"1", message: "Si llegaste acá, ya sabes que hacer."}`))
 		return
 	case "POST":
 		type Person struct {
@@ -63,7 +51,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		var p Person
 		err := json.NewDecoder(r.Body).Decode(&p)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			http.Error(w, `{"status":"FAILED","status_code":"0","message":"El cuerpo del mensaje no tiene el formato correcto."}`, http.StatusBadRequest)
 			return
 		}
 		Nombre := p.Nombre
@@ -71,10 +60,16 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		Edad := p.Edad
 		FormaContagio := p.FormaContagio
 		Estado := p.Estado
-		mensaje := `{"Nombre":"` + Nombre + `, "Departamento":"` + Departamento + `, "Edad":"` + strconv.Itoa(Edad) + `, "FormaContagio":"` + FormaContagio + `, "Estado":"` + Estado + `"}`
-		nc.Publish("proyecto2", []byte(mensaje))
-		w.Write([]byte("Elemento previo: " + last + ". Enviando: " + mensaje))
+		mensaje := `{"Nombre":"` + Nombre + `", "Departamento":"` + Departamento + `", "Edad":` + strconv.Itoa(Edad) + `, "FormaContagio":"` + FormaContagio + `", "Estado":"` + Estado + `"}`
+
+		if err := nc.Publish("proyecto2", []byte(mensaje)); err != nil {
+			http.Error(w, `{"status":"FAILED","status_code":"0","message":"No se logró publicar en el canal. ¿Está dosponible el servidor de NATS?"}`, http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{status:"OK", "status_code":"1", "data:" {"Elemento previo": ` + last + `,"Enviando": ` + mensaje + `}}`))
 	default:
-		w.Write([]byte("Sorry, only GET and POST methods are supported."))
+		http.Error(w, `{"status":"FAILED","status_code":"0","message":"Opps, solamente se soportan los métodos GET y POST."}`, http.StatusBadRequest)
+		return
 	}
 }
