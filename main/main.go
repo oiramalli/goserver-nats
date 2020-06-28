@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	nats "github.com/nats-io/nats.go"
 )
@@ -70,7 +71,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		Edad := p.Edad
 		FormaContagio := p.FormaContagio
 		Estado := p.Estado
-		mensaje := `{"Nombre":"` + Nombre + `, "Departamento":"` + Departamento + `, "Edad":"` + Edad + `, "FormaContagio":"` + FormaContagio + `, "Estado":"` + Estado + `"}`
+		mensaje := `{"Nombre":"` + Nombre + `, "Departamento":"` + Departamento + `, "Edad":"` + strconv.Itoa(Edad) + `, "FormaContagio":"` + FormaContagio + `, "Estado":"` + Estado + `"}`
 		nc.Publish("proyecto2", []byte(mensaje))
 		w.Write([]byte("Elemento previo: " + last + ". Enviando: " + mensaje))
 	default:
