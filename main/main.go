@@ -51,7 +51,6 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		var p Person
 		err := json.NewDecoder(r.Body).Decode(&p)
 		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
 			http.Error(w, `{"status":"FAILED","status_code":"0","message":"El cuerpo del mensaje no tiene el formato correcto."}`, http.StatusBadRequest)
 			return
 		}
