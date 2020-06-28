@@ -16,7 +16,7 @@ func main() {
 	// fs := http.FileServer(http.Dir("./static"))
 	// http.Handle("/", fs)
 	// Simple Async Subscriber
-	nc.Subscribe("foo", func(m *nats.Msg) {
+	nc.Subscribe("proyecto2", func(m *nats.Msg) {
 		fmt.Printf("Received a message: %s\n", string(m.Data))
 	})
 	log.Println("Listening on :8080...")
@@ -33,7 +33,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	keys, _ := r.URL.Query()["msg"]
-	nc.Publish("foo", []byte(keys[0]))
+	nc.Publish("proyecto2", []byte(keys[0]))
 	w.Header().Set("Content-Type", "application/json")
 	s := `{ "status": "OK", "message": "` + keys[0] + `" }`
 	data := &RData{}
