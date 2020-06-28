@@ -35,8 +35,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 			Message string `json:"message"`
 		}
 
-		// keys, _ := r.URL.Query()["msg"]
-		param1 := r.URL.Query().Get("param1")
+		param1 := r.URL.Query().Get("msg")
 
 		if param1 != "" {
 			w.Header().Set("Content-Type", "application/json")
@@ -53,9 +52,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Write([]byte("Si llegaste acá, ya sabes que hacer."))
 		return
-		// nc.Publish("proyecto2", []byte(keys[0]))
 	case "POST":
-		// Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
 		if err := r.ParseForm(); err != nil {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
 			return
@@ -65,7 +62,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		Edad := r.FormValue("Edad")
 		FormaContagio := r.FormValue("FormaContagio")
 		Estado := r.FormValue("Estado")
-		mensaje := `{"Nombre":"` + Nombre + `, "Departamento":"` + Departamento + `, "Edad":"` + Edad + `, "FormaContagio":"` + FormaContagio + `, "Estado":"` + Estado + `, "}`
+		mensaje := `{"Nombre":"` + Nombre + `, "Departamento":"` + Departamento + `, "Edad":"` + Edad + `, "FormaContagio":"` + FormaContagio + `, "Estado":"` + Estado + `"}`
 		nc.Publish("proyecto2", []byte(mensaje))
 		w.Write([]byte("Enviando: " + last))
 	default:
