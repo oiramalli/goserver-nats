@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -53,15 +52,24 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Si llegaste acá, ya sabes que hacer."))
 		return
 	case "POST":
-		if err := r.ParseMultipartForm(0); err != nil {
-			fmt.Fprintf(w, "ParseForm() err: %v", err)
+		type Person struct {
+			Nombre        string `json:"Nombre"`
+			Departamento  string `json:"Departamento"`
+			Edad          int    `json:"Edad"`
+			FormaContagio string `json:"Forma de contagio"`
+			Estado        string `json:"Estado"`
+		}
+		var p Person
+		err := json.NewDecoder(r.Body).Decode(&p)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		Nombre := r.FormValue("Nombre")
-		Departamento := r.FormValue("Departamento")
-		Edad := r.FormValue("Edad")
-		FormaContagio := r.FormValue("FormaContagio")
-		Estado := r.FormValue("Estado")
+		Nombre := p.Nombre
+		Departamento := p.Departamento
+		Edad := p.Edad
+		FormaContagio := p.FormaContagio
+		Estado := p.Estado
 		mensaje := `{"Nombre":"` + Nombre + `, "Departamento":"` + Departamento + `, "Edad":"` + Edad + `, "FormaContagio":"` + FormaContagio + `, "Estado":"` + Estado + `"}`
 		nc.Publish("proyecto2", []byte(mensaje))
 		w.Write([]byte("Elemento previo: " + last + ". Enviando: " + mensaje))
