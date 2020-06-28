@@ -10,6 +10,7 @@ import (
 )
 
 var nc, _ = nats.Connect("nats://nats:4222") // nats://localhost:4222
+var last = ""
 
 func main() {
 	http.HandleFunc("/", rootHandler)
@@ -17,7 +18,7 @@ func main() {
 	// http.Handle("/", fs)
 	// Simple Async Subscriber
 	nc.Subscribe("proyecto2", func(m *nats.Msg) {
-		fmt.Printf("Received a message: %s\n", string(m.Data))
+		last = string(m.Data)
 	})
 	log.Println("Listening on :8080...")
 	err := http.ListenAndServe("0.0.0.0:8080", nil)
@@ -27,22 +28,47 @@ func main() {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	type RData struct {
-		Status  string `json:"status"`
-		Message string `json:"message"`
-	}
+	switch r.Method {
+	case "GET":
+		type RData struct {
+			Status  string `json:"status"`
+			Message string `json:"message"`
+		}
 
-	keys, _ := r.URL.Query()["msg"]
-	nc.Publish("proyecto2", []byte(keys[0]))
-	w.Header().Set("Content-Type", "application/json")
-	s := `{ "status": "OK", "message": "` + keys[0] + `" }`
-	data := &RData{}
-	err := json.Unmarshal([]byte(s), data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		// keys, _ := r.URL.Query()["msg"]
+		param1 := r.URL.Query().Get("param1")
+
+		if param1 != "" {
+			w.Header().Set("Content-Type", "application/json")
+			s := `{ "status": "OK", "message": "` + param1 + `" }`
+			data := &RData{}
+			err := json.Unmarshal([]byte(s), data)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			js, err := json.Marshal(data)
+			w.Write(js)
+			return
+		}
+		w.Write([]byte("Si llegaste acá, ya sabes que hacer."))
 		return
+		// nc.Publish("proyecto2", []byte(keys[0]))
+	case "POST":
+		// Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
+		if err := r.ParseForm(); err != nil {
+			fmt.Fprintf(w, "ParseForm() err: %v", err)
+			return
+		}
+		Nombre := r.FormValue("Nombre")
+		Departamento := r.FormValue("Departamento")
+		Edad := r.FormValue("Edad")
+		FormaContagio := r.FormValue("FormaContagio")
+		Estado := r.FormValue("Estado")
+		mensaje := `{"Nombre":"` + Nombre + `, "Departamento":"` + Departamento + `, "Edad":"` + Edad + `, "FormaContagio":"` + FormaContagio + `, "Estado":"` + Estado + `, "}`
+		nc.Publish("proyecto2", []byte(mensaje))
+		w.Write([]byte("Enviando: " + last))
+	default:
+		w.Write([]byte("Sorry, only GET and POST methods are supported."))
 	}
-
-	js, err := json.Marshal(data)
-	w.Write(js)
 }
