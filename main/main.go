@@ -64,7 +64,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		Estado := r.FormValue("Estado")
 		mensaje := `{"Nombre":"` + Nombre + `, "Departamento":"` + Departamento + `, "Edad":"` + Edad + `, "FormaContagio":"` + FormaContagio + `, "Estado":"` + Estado + `"}`
 		nc.Publish("proyecto2", []byte(mensaje))
-		w.Write([]byte("Enviando: " + last))
+		w.Write([]byte("Elemento previo: " + last + ". Enviando: " + mensaje))
 	default:
 		w.Write([]byte("Sorry, only GET and POST methods are supported."))
 	}
