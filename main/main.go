@@ -10,7 +10,7 @@ import (
 )
 
 var nc, _ = nats.Connect("nats://nats:4222") // nats://localhost:4222
-var last = ""
+var last = "{}"
 
 func main() {
 	http.HandleFunc("/", rootHandler)
@@ -53,7 +53,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Si llegaste acá, ya sabes que hacer."))
 		return
 	case "POST":
-		if err := r.ParseForm(); err != nil {
+		if err := r.ParseMultipartForm(0); err != nil {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
 			return
 		}
