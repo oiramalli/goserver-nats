@@ -38,7 +38,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{status:"OK", "status_code":"1", message: "Si llegaste acá, ya sabes que hacer."}`))
+		w.Write([]byte(`{"status":"OK", "status_code":"1", message: "Si llegaste acá, ya sabes que hacer."}`))
 		return
 	case "POST":
 		type Person struct {
@@ -66,7 +66,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{status:"OK", "status_code":"1", "data:" {"Elemento previo": ` + last + `,"Enviando": ` + mensaje + `}}`))
+		w.Write([]byte(`{"status":"OK", "status_code":"1", "data": {"Elemento previo": ` + last + `,"Enviando": ` + mensaje + `}}`))
 	default:
 		http.Error(w, `{"status":"FAILED","status_code":"0","message":"Opps, solamente se soportan los métodos GET y POST."}`, http.StatusBadRequest)
 		return
