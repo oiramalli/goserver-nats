@@ -59,7 +59,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		Edad := p.Edad
 		FormaContagio := p.FormaContagio
 		Estado := p.Estado
-		mensaje := `{"Nombre":"` + Nombre + `", "Departamento":"` + Departamento + `", "Edad":` + strconv.Itoa(Edad) + `, "FormaContagio":"` + FormaContagio + `", "Estado":"` + Estado + `"}`
+		mensaje := `{"Nombre":"` + Nombre + `", "Departamento":"` + Departamento + `", "Edad":` + strconv.Itoa(Edad) + `, "Forma de contagio":"` + FormaContagio + `", "Estado":"` + Estado + `"}`
 
 		if err := nc.Publish("proyecto2", []byte(mensaje)); err != nil {
 			http.Error(w, `{"status":"FAILED","status_code":"0","message":"No se logró publicar en el canal. ¿Está dosponible el servidor de NATS?"}`, http.StatusBadRequest)
