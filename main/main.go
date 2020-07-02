@@ -9,7 +9,6 @@ import (
 	nats "github.com/nats-io/nats.go"
 )
 
-var nc, _ = nats.Connect("nats://nats:4222") // nats://localhost:4222
 var last = "{}"
 
 func main() {
@@ -17,9 +16,6 @@ func main() {
 	// fs := http.FileServer(http.Dir("./static"))
 	// http.Handle("/", fs)
 	// Simple Async Subscriber
-	nc.Subscribe("proyecto2", func(m *nats.Msg) {
-		last = string(m.Data)
-	})
 	log.Println("Listening on :8080...")
 	err := http.ListenAndServe("0.0.0.0:8080", nil)
 	if err != nil {
@@ -41,6 +37,16 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"status":"OK", "status_code":"1", "message": "Si llegaste acá, ya sabes que hacer."}`))
 		return
 	case "POST":
+		var nc, err = nats.Connect("nats://nats:4222") // nats://localhost:4222
+		if err != nil {
+			http.Error(w, `{"status":"FAILED","status_code":"0","message":"No se pudo conectar a NATS. ¿Está dosponible el servidor de NATS?"}`, http.StatusBadRequest)
+			return
+		}
+
+		nc.Subscribe("proyecto2", func(m *nats.Msg) {
+			last = string(m.Data)
+		})
+
 		type Person struct {
 			Nombre        string `json:"Nombre"`
 			Departamento  string `json:"Departamento"`
@@ -49,7 +55,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 			Estado        string `json:"Estado"`
 		}
 		var p Person
-		err := json.NewDecoder(r.Body).Decode(&p)
+		err = json.NewDecoder(r.Body).Decode(&p)
 		if err != nil {
 			http.Error(w, `{"status":"FAILED","status_code":"0","message":"El cuerpo del mensaje no tiene el formato correcto."}`, http.StatusBadRequest)
 			return
@@ -67,6 +73,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"OK", "status_code":"1", "data": {"Elemento previo": ` + last + `,"Enviando": ` + mensaje + `}}`))
+		nc.Close()
 	default:
 		http.Error(w, `{"status":"FAILED","status_code":"0","message":"Opps, solamente se soportan los métodos GET y POST."}`, http.StatusBadRequest)
 		return
